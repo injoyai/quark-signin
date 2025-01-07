@@ -1,6 +1,7 @@
 package sign
 
 import (
+	"errors"
 	"github.com/injoyai/conv"
 	"github.com/injoyai/goutil/net/http"
 	"github.com/injoyai/goutil/oss"
@@ -13,6 +14,15 @@ type Sign struct {
 }
 
 func (this *Sign) do(method, u string) (*conv.Map, error) {
+	if len(this.Vcode) == 0 {
+		return nil, errors.New("未设置vcode")
+	}
+	if len(this.Sign) == 0 {
+		return nil, errors.New("未设置sign")
+	}
+	if len(this.Kps) == 0 {
+		return nil, errors.New("未设置kps")
+	}
 	resp := http.Url(u).SetQuerys(map[string]interface{}{
 		"fr":    "android",
 		"pr":    "ucpro",
