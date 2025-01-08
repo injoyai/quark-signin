@@ -95,24 +95,23 @@ sys:
 			s.SetIco(Ico)
 			setHint = func(info *sign.Info, err error, needNotice bool) {
 				logs.PrintErr(err)
-				format := "签到状态: %v\n签到进度: %d/%d\n签到空间: %s\n错误消息: %v"
+				format := "信息时间: %s\n签到状态: %v\n签到进度: %d/%d\n签到空间: %s\n错误消息: %v"
 				if err != nil {
-					s.SetHint(fmt.Sprintf(format, "未知", 0, 0, "", err.Error()))
-					return
-				}
-				s.SetHint(fmt.Sprintf(format, info.Sign, info.SignProgress, info.SignTarget, info.LastSpace, "无"))
-				if needNotice {
-					if err != nil && cfg.GetBool("sys.notice-err") {
+					s.SetHint(fmt.Sprintf(format, time.Now().Format("01-02 15:04:05"), "未知", 0, 0, "", err.Error()))
+					if needNotice && cfg.GetBool("sys.notice-err") {
 						notice.DefaultWindows.Publish(&notice.Message{
 							Title:   "签到错误",
 							Content: err.Error(),
 						})
-					} else if err == nil && cfg.GetBool("sys.notice-succ") {
-						notice.DefaultWindows.Publish(&notice.Message{
-							Title:   "签到成功",
-							Content: fmt.Sprintf("签到进度: %d/%d\n签到空间: %s\n", info.SignProgress, info.SignTarget, info.LastSpace),
-						})
 					}
+					return
+				}
+				s.SetHint(fmt.Sprintf(format, time.Now().Format("01-02 15:04:05"), info.Sign, info.SignProgress, info.SignTarget, info.LastSpace, "无"))
+				if needNotice && cfg.GetBool("sys.notice-succ") {
+					notice.DefaultWindows.Publish(&notice.Message{
+						Title:   "签到成功",
+						Content: fmt.Sprintf("签到进度: %d/%d\n签到空间: %s\n", info.SignProgress, info.SignTarget, info.LastSpace),
+					})
 				}
 			}
 			//设置提示
