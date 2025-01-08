@@ -36,7 +36,7 @@ sys:
 
 	var t *task.Cron
 
-	setHint := func(info *sign.Info, err error) {}
+	setHint := func(info *sign.Info, err error, needNotice bool) {}
 
 	f := func(m *conv.Map) {
 		s := &sign.Sign{
@@ -48,37 +48,24 @@ sys:
 		for n := 0; n < retry; n++ {
 			info, err := s.Info()
 			if err != nil {
-				logs.Err(err)
-				if m.GetBool("sys.notice-err") {
-					notice.DefaultWindows.Publish(&notice.Message{
-						Title:   "签到错误",
-						Content: err.Error(),
-					})
-				}
+				setHint(info, err, true)
 				<-time.After(time.Second * 10)
 				continue
+			}
+			if info.Sign {
+				//已经签到
+				setHint(info, nil, true)
+				return
 			}
 			for x := 0; x < retry; x++ {
 				if !info.Sign {
 					if err := s.Signin(); err != nil {
-						logs.Err(err)
-						if m.GetBool("sys.notice-err") {
-							notice.DefaultWindows.Publish(&notice.Message{
-								Title:   "签到错误",
-								Content: err.Error(),
-							})
-						}
+						setHint(info, err, true)
 						<-time.After(time.Second * 10)
 						continue
 					}
 					info, err := s.Info()
-					if err == nil && m.GetBool("sys.notice-succ") {
-						notice.DefaultWindows.Publish(&notice.Message{
-							Title:   "签到成功",
-							Content: fmt.Sprintf("签到进度: %d/%d\n签到空间: %s\n", info.SignProgress, info.SignTarget, info.LastSpace),
-						})
-					}
-					setHint(info, err)
+					setHint(info, err, true)
 					return
 				}
 			}
@@ -106,13 +93,27 @@ sys:
 	tray.Run(
 		func(s *tray.Tray) {
 			s.SetIco(Ico)
-			setHint = func(info *sign.Info, err error) {
+			setHint = func(info *sign.Info, err error, needNotice bool) {
+				logs.PrintErr(err)
 				format := "签到状态: %v\n签到进度: %d/%d\n签到空间: %s\n错误消息: %v"
 				if err != nil {
 					s.SetHint(fmt.Sprintf(format, "未知", 0, 0, "", err.Error()))
 					return
 				}
 				s.SetHint(fmt.Sprintf(format, info.Sign, info.SignProgress, info.SignTarget, info.LastSpace, "无"))
+				if needNotice {
+					if err != nil && cfg.GetBool("sys.notice-err") {
+						notice.DefaultWindows.Publish(&notice.Message{
+							Title:   "签到错误",
+							Content: err.Error(),
+						})
+					} else if err == nil && cfg.GetBool("sys.notice-succ") {
+						notice.DefaultWindows.Publish(&notice.Message{
+							Title:   "签到成功",
+							Content: fmt.Sprintf("签到进度: %d/%d\n签到空间: %s\n", info.SignProgress, info.SignTarget, info.LastSpace),
+						})
+					}
+				}
 			}
 			//设置提示
 			x := &sign.Sign{
@@ -121,16 +122,7 @@ sys:
 				Kps:   cfg.GetString("cookie.kps"),
 			}
 			info, err := x.Info()
-			if err != nil {
-				logs.Err(err)
-				if cfg.GetBool("sys.notice-err") {
-					notice.DefaultWindows.Publish(&notice.Message{
-						Title:   "获取签到信息错误",
-						Content: err.Error(),
-					})
-				}
-			}
-			setHint(info, err)
+			setHint(info, err, false)
 		},
 		tray.WithShow(func(m *tray.Menu) {
 			config.GUI(
@@ -154,6 +146,8 @@ sys:
 						}},
 					},
 					OnSaved: func(m *conv.Map) {
+						file = cfg.WithFile(filename).(*conv.Map)
+						cfg.Init(file)
 						//定时签到
 						if m.GetBool("sys.timer-sign") {
 							if t != nil {
