@@ -24,8 +24,8 @@ cookie:
     vcode: 
 sys:
     retry: "3"
-	notice-succ: true
-	notice-err: true
+    notice-succ: true
+    notice-err: true
     startup-sign: false
     timer-corn: 0 0 9 * * *
     timer-sign: true
