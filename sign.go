@@ -3,6 +3,7 @@ package sign
 import (
 	"errors"
 	"github.com/injoyai/conv"
+	"github.com/injoyai/goutil/g"
 	"github.com/injoyai/goutil/net/http"
 	"github.com/injoyai/goutil/oss"
 )
@@ -13,7 +14,7 @@ type Sign struct {
 	Kps   string `json:"kps"`
 }
 
-func (this *Sign) do(method, u string) (*conv.Map, error) {
+func (this *Sign) do(method, u string, body interface{}) (*conv.Map, error) {
 	if len(this.Vcode) == 0 {
 		return nil, errors.New("未设置vcode")
 	}
@@ -29,7 +30,7 @@ func (this *Sign) do(method, u string) (*conv.Map, error) {
 		"vcode": this.Vcode,
 		"sign":  this.Sign,
 		"kps":   this.Kps,
-	}).Debug().SetMethod(method).Do()
+	}).SetBody(body).Debug().SetMethod(method).Do()
 	if resp.Err() != nil {
 		return nil, resp.Err()
 	}
@@ -40,7 +41,7 @@ func (this *Sign) do(method, u string) (*conv.Map, error) {
 // {"status":200,"code":0,"message":"","timestamp":1736235143,"data":{"member_type":"NORMAL","use_capacity":29383673,"cap_growth":{"lost_total_cap":0,"cur_total_cap":440401920,"cur_total_sign_day":17},"88VIP":false,"member_status":{"Z_VIP":"UNPAID","VIP":"UNPAID","SUPER_VIP":"UNPAID","MINI_VIP":"UNPAID"},"cap_sign":{"sign_daily":true,"sign_target":7,"sign_daily_reward":41943040,"sign_progress":2,"sign_rewards":[{"name":"+20MB","reward_cap":20971520},{"name":"+40MB","highlight":"翻倍","reward_cap":41943040},{"name":"+20MB","reward_cap":20971520},{"name":"+20MB","reward_cap":20971520},{"name":"+20MB","reward_cap":20971520},{"name":"+20MB","reward_cap":20971520},{"name":"+100MB","highlight":"翻五倍","reward_cap":104857600}]},"cap_composition":{"other":0,"member_own":10737418240,"sign_reward":440401920},"total_capacity":11177820160},"metadata":{}}
 func (this *Sign) Info() (*Info, error) {
 	u := "https://drive-m.quark.cn/1/clouddrive/capacity/growth/info"
-	m, err := this.do(http.MethodGet, u)
+	m, err := this.do(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +60,7 @@ func (this *Sign) Info() (*Info, error) {
 // Signin 签到
 func (this *Sign) Signin() error {
 	u := "https://drive-m.quark.cn/1/clouddrive/capacity/growth/sign"
-	_, err := this.do(http.MethodPost, u)
+	_, err := this.do(http.MethodPost, u, g.Map{"sign_cyclic": true})
 	return err
 }
 
