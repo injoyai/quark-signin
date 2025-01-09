@@ -72,24 +72,6 @@ sys:
 		}
 	}
 
-	//定时签到
-	if cfg.GetBool("sys.timer-sign") {
-		if t != nil {
-			t.Stop()
-		}
-		t = task.New().Start()
-		t.SetTask("", cfg.GetString("sys.timer-corn"), func() {
-			logs.Debug("定时签到")
-			f(file)
-		})
-	}
-
-	//开机签到
-	if cfg.GetBool("sys.startup-sign") {
-		logs.Debug("开机签到")
-		f(file)
-	}
-
 	tray.Run(
 		func(s *tray.Tray) {
 			s.SetIco(Ico)
@@ -114,14 +96,33 @@ sys:
 					})
 				}
 			}
-			//设置提示
-			x := &sign.Sign{
-				Vcode: cfg.GetString("cookie.vcode"),
-				Sign:  cfg.GetString("cookie.sign"),
-				Kps:   cfg.GetString("cookie.kps"),
+
+			//定时签到
+			if cfg.GetBool("sys.timer-sign") {
+				if t != nil {
+					t.Stop()
+				}
+				t = task.New().Start()
+				t.SetTask("", cfg.GetString("sys.timer-corn"), func() {
+					logs.Debug("定时签到")
+					f(file)
+				})
 			}
-			info, err := x.Info()
-			setHint(info, err, false)
+
+			//开机签到
+			if cfg.GetBool("sys.startup-sign") {
+				logs.Debug("开机签到")
+				f(file)
+			} else {
+				//设置提示
+				x := &sign.Sign{
+					Vcode: cfg.GetString("cookie.vcode"),
+					Sign:  cfg.GetString("cookie.sign"),
+					Kps:   cfg.GetString("cookie.kps"),
+				}
+				info, err := x.Info()
+				setHint(info, err, false)
+			}
 		},
 		tray.WithShow(func(m *tray.Menu) {
 			config.GUI(
