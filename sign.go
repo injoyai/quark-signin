@@ -30,7 +30,7 @@ func (this *Sign) do(method, u string, body interface{}) (*conv.Map, error) {
 		"vcode": this.Vcode,
 		"sign":  this.Sign,
 		"kps":   this.Kps,
-	}).SetBody(body).Debug().SetMethod(method).Do()
+	}).SetBody(body).Debug(false).SetMethod(method).Do()
 	if resp.Err() != nil {
 		return nil, resp.Err()
 	}

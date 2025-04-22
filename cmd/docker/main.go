@@ -16,6 +16,7 @@ func init() {
 }
 
 func main() {
+	signin()
 	spec := cfg.GetString("spec")
 	t := task.New()
 	t.SetTask("signin", spec, signin)
@@ -57,7 +58,7 @@ func signin() {
 					logs.Err(err)
 					return
 				}
-				print(info, err)
+				print(info, nil)
 				return
 			}
 		}
