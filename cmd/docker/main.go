@@ -16,19 +16,26 @@ func init() {
 }
 
 func main() {
-	signin()
-	spec := cfg.GetString("spec")
-	t := task.New()
-	t.SetTask("signin", spec, signin)
-	t.Start()
-	select {}
-}
-func signin() {
 	vcode := cfg.GetString("vcode")
 	_sign := cfg.GetString("sign")
 	kps := cfg.GetString("kps")
 	retry := cfg.GetInt("retry")
+	spec := cfg.GetString("spec")
 
+	logs.Debug("Vcode:", vcode)
+	logs.Debug("Sign:", _sign)
+	logs.Debug("Kps:", kps)
+	logs.Debug("Retry:", retry)
+	logs.Debug("Spec:", spec)
+
+	signin(vcode, _sign, kps, retry)
+
+	t := task.New()
+	t.SetTask("signin", spec, func() { signin(vcode, _sign, kps, retry) })
+	t.Start()
+	select {}
+}
+func signin(vcode, _sign, kps string, retry int) {
 	s := &sign.Sign{
 		Vcode: vcode,
 		Sign:  _sign,
