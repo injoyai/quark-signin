@@ -4,8 +4,9 @@ go 1.20
 
 require (
 	github.com/injoyai/conv v1.1.14
-	github.com/injoyai/goutil v0.0.0-20250103073808-65dcad3e0a2f
+	github.com/injoyai/goutil v0.0.0-20250108005534-73c4b329724a
 	github.com/injoyai/logs v1.0.9
+	github.com/injoyai/notice v0.0.2
 	github.com/injoyai/tool/config v0.0.0-20250106082624-fdfa47302a41
 )
 
@@ -41,9 +42,9 @@ require (
 	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.667 // indirect
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms v1.0.667 // indirect
-	golang.org/x/net v0.25.0 // indirect
-	golang.org/x/sys v0.20.0 // indirect
-	golang.org/x/text v0.15.0 // indirect
+	golang.org/x/net v0.27.0 // indirect
+	golang.org/x/sys v0.22.0 // indirect
+	golang.org/x/text v0.16.0 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect

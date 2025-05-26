@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"github.com/injoyai/conv/cfg/v2"
 	"github.com/injoyai/goutil/task"
 	"github.com/injoyai/logs"
+	"github.com/injoyai/notice/pkg/push"
+	"github.com/injoyai/notice/pkg/push/serverchan"
 	sign "github.com/injoyai/quark-signin"
 	"time"
 )
@@ -21,21 +24,26 @@ func main() {
 	kps := cfg.GetString("kps")
 	retry := cfg.GetInt("retry")
 	spec := cfg.GetString("spec")
+	sendKey := cfg.GetString("notice.serverChan.sendKey")
 
+	logs.Info("版本:", "v1.0")
+	logs.Info("说明:", "增加了serverchan的通知")
+	logs.Info("==============================================================================")
 	logs.Debug("Vcode:", vcode)
 	logs.Debug("Sign:", _sign)
 	logs.Debug("Kps:", kps)
 	logs.Debug("Retry:", retry)
 	logs.Debug("Spec:", spec)
+	logs.Debug("SendKey:", sendKey)
 
-	signin(vcode, _sign, kps, retry)
+	signin(vcode, _sign, kps, retry, sendKey)
 
 	t := task.New()
-	t.SetTask("signin", spec, func() { signin(vcode, _sign, kps, retry) })
+	t.SetTask("signin", spec, func() { signin(vcode, _sign, kps, retry, sendKey) })
 	t.Start()
 	select {}
 }
-func signin(vcode, _sign, kps string, retry int) {
+func signin(vcode, _sign, kps string, retry int, sendKey string) {
 	s := &sign.Sign{
 		Vcode: vcode,
 		Sign:  _sign,
@@ -50,7 +58,7 @@ func signin(vcode, _sign, kps string, retry int) {
 		}
 		if info.Sign {
 			//已经签到
-			print(info, nil)
+			print(info, sendKey)
 			return
 		}
 		for x := 0; x < retry; x++ {
@@ -65,17 +73,22 @@ func signin(vcode, _sign, kps string, retry int) {
 					logs.Err(err)
 					return
 				}
-				print(info, nil)
+				print(info, sendKey)
 				return
 			}
 		}
 	}
 }
 
-func print(info *sign.Info, err error) {
-	if err != nil {
-		logs.Err(err)
-		return
-	}
-	logs.Infof("状态: %v, 容量: %s, 进度:%d/%d, 总容量: %s", info.Sign, info.LastSpace, info.SignProgress, info.SignTarget, info.TotalSpace)
+func print(info *sign.Info, sendKey string) {
+	msg := fmt.Sprintf("签到成功, 容量: %s, 进度:%d/%d, 总容量: %s", info.LastSpace, info.SignProgress, info.SignTarget, info.TotalSpace)
+	logs.Info(msg)
+	_notice(sendKey, msg)
+}
+
+func _notice(sendKey, msg string) {
+	serverchan.New(sendKey).Push(&push.Message{
+		Title:   "夸克签到",
+		Content: msg,
+	})
 }
