@@ -87,8 +87,9 @@ func print(info *sign.Info, sendKey string) {
 }
 
 func _notice(sendKey, msg string) {
-	serverchan.New(sendKey).Push(&push.Message{
+	err := serverchan.New(sendKey).Push(&push.Message{
 		Title:   "夸克签到",
 		Content: msg,
 	})
+	logs.PrintErr(err)
 }
