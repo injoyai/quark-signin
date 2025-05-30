@@ -26,8 +26,8 @@ func main() {
 	spec := cfg.GetString("spec")
 	sendKey := cfg.GetString("notice.serverChan.sendKey")
 
-	logs.Info("版本:", "v1.0")
-	logs.Info("说明:", "增加了serverchan的通知")
+	logs.Info("版本:", "v1.1")
+	logs.Info("说明:", "增加了通知失败的错误信息打印")
 	logs.Info("==============================================================================")
 	logs.Debug("Vcode:", vcode)
 	logs.Debug("Sign:", _sign)
