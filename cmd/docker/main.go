@@ -49,8 +49,10 @@ func signin(vcode, _sign, kps string, retry int, sendKey string) {
 		Sign:  _sign,
 		Kps:   kps,
 	}
+	var info *sign.Info
+	var err error
 	for n := 0; n < retry; n++ {
-		info, err := s.Info()
+		info, err = s.Info()
 		if err != nil {
 			logs.Err(err)
 			<-time.After(time.Second * 10)
@@ -63,12 +65,12 @@ func signin(vcode, _sign, kps string, retry int, sendKey string) {
 		}
 		for x := 0; x < retry; x++ {
 			if !info.Sign {
-				if err := s.Signin(); err != nil {
+				if err = s.Signin(); err != nil {
 					logs.Err(err)
 					<-time.After(time.Second * 10)
 					continue
 				}
-				info, err := s.Info()
+				info, err = s.Info()
 				if err != nil {
 					logs.Err(err)
 					return
@@ -77,6 +79,9 @@ func signin(vcode, _sign, kps string, retry int, sendKey string) {
 				return
 			}
 		}
+	}
+	if err != nil {
+		_notice(sendKey, fmt.Sprintf("签到失败, %s", err.Error()))
 	}
 }
 
