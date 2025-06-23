@@ -26,8 +26,8 @@ func main() {
 	spec := cfg.GetString("spec")
 	sendKey := cfg.GetString("notice.serverChan.sendKey")
 
-	logs.Info("版本:", "v1.1")
-	logs.Info("说明:", "增加了通知失败的错误信息打印")
+	logs.Info("版本:", "v1.2")
+	logs.Info("说明:", "增加了通知失败的错误信息推送")
 	logs.Info("==============================================================================")
 	logs.Debug("Vcode:", vcode)
 	logs.Debug("Sign:", _sign)
@@ -49,8 +49,11 @@ func signin(vcode, _sign, kps string, retry int, sendKey string) {
 		Sign:  _sign,
 		Kps:   kps,
 	}
-	var info *sign.Info
+
+	var info = new(sign.Info)
 	var err error
+
+	//判断是否签到
 	for n := 0; n < retry; n++ {
 		info, err = s.Info()
 		if err != nil {
@@ -63,23 +66,26 @@ func signin(vcode, _sign, kps string, retry int, sendKey string) {
 			print(info, sendKey)
 			return
 		}
+	}
+
+	//进行签到
+	if info == nil || !info.Sign {
 		for x := 0; x < retry; x++ {
-			if !info.Sign {
-				if err = s.Signin(); err != nil {
-					logs.Err(err)
-					<-time.After(time.Second * 10)
-					continue
-				}
-				info, err = s.Info()
-				if err != nil {
-					logs.Err(err)
-					return
-				}
-				print(info, sendKey)
+			if err = s.Signin(); err != nil {
+				logs.Err(err)
+				<-time.After(time.Second * 10)
+				continue
+			}
+			info, err = s.Info()
+			if err != nil {
+				logs.Err(err)
 				return
 			}
+			print(info, sendKey)
+			break
 		}
 	}
+
 	if err != nil {
 		_notice(sendKey, fmt.Sprintf("签到失败, %s", err.Error()))
 	}
