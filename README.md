@@ -13,8 +13,8 @@
    - 需要开启HTTPS代理,下载并安装ca证书到手机
    - 打开抓包工具并运行
    - 打开夸克网盘额签到页面
-   - 回到抓包工具,并找到url为 `https://drive-m.quark.cn/1/clouddrive/capacity/growth/info` 的请求信息
-   - 复制url后面的参数: `kps` `sign` `vcode`
+   - 回到抓包工具,并找类似 `https://drive-m.quark.cn/1/clouddrive/capacity/growth/info` 的请求信息
+   - 复制url后面的参数: `kps` `sign` `vcode`, 苹果手机为: `kps_wg` `sign_wg` `vcode`
 2. 把 `kps` `sign` `vcode` 填写到 `签到工具` 相应的配置中
    - ![](docs/配置.png)
 3. 设置 `签到工具` 开机自启即可
